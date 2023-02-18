@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import './App.css';
 import TodoListMultipleClass from './todo-list/TodoListMultipleClass';
+import TodoListMultipleFunction from './todo-list/TodoListMultipleFunction';
 import TodoListSingleClass from './todo-list/TodoListSingleClass';
+import TodoListSingleFunction from './todo-list/TodoListSingleFunction';
 
 function App() {
   let [ visibleTab, setVisibleTab ] = useState('single_class');
@@ -34,6 +36,28 @@ function App() {
                 Multiple class
               </a>
             </li>
+            <li className="nav-item">
+              <a href="#"
+                className={`nav-link ${visibleTab === 'single_function' ? 'active' : ''}`}
+                onClick={(ev) => {
+                  ev.preventDefault();
+                  setVisibleTab('single_function');
+                }}
+              >
+                Single function
+              </a>
+            </li>
+            <li className="nav-item">
+              <a href="#"
+                className={`nav-link ${visibleTab === 'multiple_function' ? 'active' : ''}`}
+                onClick={(ev) => {
+                  ev.preventDefault();
+                  setVisibleTab('multiple_function');
+                }}
+              >
+                Multiple function
+              </a>
+            </li>
           </ul>
           <div className="clearfix"></div>
           <div className="tab-content">
@@ -48,6 +72,20 @@ function App() {
               visibleTab === 'multiple_class' ? (
                 <div className='tab-pane active'>
                   <TodoListMultipleClass />
+                </div>
+              ) : ''
+            }
+            {
+              visibleTab === 'single_function' ? (
+                <div className='tab-pane active'>
+                  <TodoListSingleFunction />
+                </div>
+              ) : ''
+            }
+            {
+              visibleTab === 'multiple_function' ? (
+                <div className='tab-pane active'>
+                  <TodoListMultipleFunction />
                 </div>
               ) : ''
             }
