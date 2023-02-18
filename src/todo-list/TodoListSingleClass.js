@@ -15,7 +15,9 @@ class TodoListSingleClass extends React.Component
 
 	render()
 	{
-		let inputElement;
+		const state = this.state;
+		const todos = this.state.todos;
+
 		return (
 			<div className="row mt-4">
 				<div className="col-lg-8">
@@ -46,25 +48,24 @@ class TodoListSingleClass extends React.Component
 							>
 								<input
 									className="form-control"
-									ref={(el) => inputElement = el}
+									value={state.newTodo}
 									onInput={(ev)=>this.setState({
 										newTodo: ev.target.value,
 									})} />
 								<button
 									className="btn btn-outline-secondary"
-									disabled={this.state.newTodo.trim() === ''}
+									disabled={state.newTodo.trim() === ''}
 									onClick={()=>{
 										this.setState({
 											todos: [
 												{
-													text: this.state.newTodo.trim(),
+													text: state.newTodo.trim(),
 													isCompleted: false,
 												},
-												...this.state.todos,
+												...todos,
 											],
 											newTodo: '',
 										});
-										inputElement.value = '';
 									}}
 								>
 									Add
@@ -74,10 +75,10 @@ class TodoListSingleClass extends React.Component
 						<div className="col-md-auto">
 							<button
 								className="btn btn-outline-danger float-end"
-								disabled={!this.state.todos.some((todo)=>todo.isCompleted)}
+								disabled={!todos.some((todo)=>todo.isCompleted)}
 								onClick={() => {
 									this.setState({
-										todos: this.state.todos.filter((todo) => !todo.isCompleted)
+										todos: todos.filter((todo) => !todo.isCompleted)
 									})
 								}}
 							>
@@ -85,15 +86,15 @@ class TodoListSingleClass extends React.Component
 							</button>
 						</div>
 					</div>
-					<div><b>Total: </b>{this.state.todos.length}</div>
-					{(! this.state.todos.length) ? (
+					<div><b>Total: </b>{todos.length}</div>
+					{(! todos.length) ? (
 						<div className="text-secondary text-center">
 							The todo list is empty.
 						</div>
 					) : ''}
 					<div className="list-group mb-5">
 						{
-							this.state.todos.map((todo, index) => (
+							todos.map((todo, index) => (
 								<React.Fragment key={index}>
 									<div className="list-group-item">
 										<input
@@ -104,7 +105,7 @@ class TodoListSingleClass extends React.Component
 											onChange={(ev)=>{
 												todo.isCompleted = ev.target.checked;
 												this.setState({
-													todos: [...this.state.todos],
+													todos: [...todos],
 												});
 											}}
 										/>
@@ -118,9 +119,9 @@ class TodoListSingleClass extends React.Component
 										<button
 											className="btn btn-sm btn-outline-danger float-end"
 											onClick={()=>{
-												this.state.todos.splice(index, 1);
+												todos.splice(index, 1);
 												this.setState({
-													todos: [...this.state.todos],
+													todos: [...todos],
 												});
 											}}
 										>
@@ -140,7 +141,7 @@ class TodoListSingleClass extends React.Component
 						<code>
 							{JSON.stringify({
 								...this.state,
-								...{ todos: truncateTodos(this.state.todos, 20) }
+								...{ todos: truncateTodos(todos, 20) }
 							}, null, 2)}
 						</code>
 					</pre>

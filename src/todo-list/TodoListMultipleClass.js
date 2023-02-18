@@ -35,7 +35,7 @@ class TodoList extends React.Component
 					</label>
 					<button
 						className="btn btn-sm btn-outline-danger float-end"
-						onClick={() => this.props.onRemove()}
+						onClick={() => this.props.onRemove(index)}
 					>
 						Remove
 					</button>
@@ -61,7 +61,6 @@ class TodoListMultipleClass extends React.Component
 	{
 		const state = this.state;
 		const todos = this.state.todos;
-		let inputElement;
 
 		return (
 			<div className="row mt-4">
@@ -93,7 +92,6 @@ class TodoListMultipleClass extends React.Component
 							>
 								<input
 									className="form-control"
-									ref={(el) => inputElement = el}
 									value={state.newTodo}
 									onInput={(ev) => {
 										this.setState({
@@ -105,7 +103,6 @@ class TodoListMultipleClass extends React.Component
 									className="btn btn-outline-secondary"
 									disabled={state.newTodo.trim() === ''}
 									onClick={()=>{
-										console.log(inputElement)
 										this.setState({
 											newTodo: '',
 											todos: [{
@@ -113,7 +110,6 @@ class TodoListMultipleClass extends React.Component
 												isCompleted: false,
 											}].concat(todos),
 										});
-										inputElement.value = '';
 									}}
 								>
 									Add
@@ -161,33 +157,19 @@ class TodoListMultipleClass extends React.Component
 					</div>
 				</div>
 				<div className="col-lg-4">
-					<DataDisplay
-						data={{...state}}
-					/>
+					<h5>Data</h5>
+					<pre
+						ref={(el)=>{this.preElement = el}}
+					>
+						<code>
+							{JSON.stringify({
+								...state,
+								...{ todos: truncateTodos(todos, 20) }
+							} , null, 2)}
+						</code>
+					</pre>
 				</div>
 			</div>
-		);
-	}
-}
-
-class DataDisplay extends React.Component
-{
-	render()
-	{
-		return (
-			<>
-				<h5>Data</h5>
-				<pre
-					ref={(el)=>{this.preElement = el}}
-				>
-					<code>
-						{JSON.stringify({
-							...this.props.data,
-							...{ todos: truncateTodos(this.props.data.todos, 20) }
-						} , null, 2)}
-					</code>
-				</pre>
-			</>
 		);
 	}
 
