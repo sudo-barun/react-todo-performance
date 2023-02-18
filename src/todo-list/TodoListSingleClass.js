@@ -1,5 +1,5 @@
 import React from "react";
-import { getTodos } from "./common.js";
+import { getTodos, truncateTodos } from "./common.js";
 
 export default
 class TodoListSingleClass extends React.Component
@@ -138,7 +138,10 @@ class TodoListSingleClass extends React.Component
 						ref={(el)=>{this.preElement = el}}
 					>
 						<code>
-							{JSON.stringify(this.state, null, 2)}
+							{JSON.stringify({
+								...this.state,
+								...{ todos: truncateTodos(this.state.todos, 20) }
+							}, null, 2)}
 						</code>
 					</pre>
 				</div>

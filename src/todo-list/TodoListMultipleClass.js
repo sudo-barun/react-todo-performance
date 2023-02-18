@@ -1,46 +1,47 @@
 import React from "react";
-import { getTodos } from "./common.js";
+import { getTodos, truncateTodos } from "./common.js";
 
-class NewTodo extends React.Component
+class TodoList extends React.Component
 {
-	constructor(props)
+	shouldComponentUpdate(nextProps)
 	{
-		super(props);
-		this.state = {
-			newTodo: '',
-		};
+		return nextProps.todos !== this.props.todos;
 	}
 
 	render()
 	{
-		let inputElement;
-		return (
-			<form
-				className="input-group mb-3 w-75 mx-auto"
-				onSubmit={(ev)=>ev.preventDefault()}
-			>
-				<input
-					className="form-control"
-					ref={(el) => inputElement = el}
-					onInput={(ev)=>this.setState({
-						newTodo: ev.target.value,
-					})}
-				/>
-				<button
-					className="btn btn-outline-secondary"
-					disabled={this.state.newTodo.trim() === ''}
-					onClick={()=>{
-						this.props.onAddNewTodo(this.state.newTodo.trim());
-						this.setState({
-							newTodo: '',
-						});
-						inputElement.value = '';
-					}}
-				>
-					Add
-				</button>
-			</form>
-		);
+		return this.props.todos.map((todo, index) => {
+			const { text, isCompleted } = todo;
+			return (
+				<div key={index} className="list-group-item">
+					<input
+						type="checkbox"
+						id={`todo-item-${index}`}
+						className="form-check-input"
+						checked={isCompleted}
+						onChange={(ev) => {
+							this.props.onTodoUpdate(index, {
+								...todo,
+								isCompleted: ev.target.checked,
+							});
+						}}
+					/>
+					<span> </span>
+					<label
+						className={`form-check-label ${isCompleted ? `text-decoration-line-through` : ''}` }
+						htmlFor={`todo-item-${index}`}
+					>
+						{text}
+					</label>
+					<button
+						className="btn btn-sm btn-outline-danger float-end"
+						onClick={() => this.props.onRemove()}
+					>
+						Remove
+					</button>
+				</div>
+			);
+		});
 	}
 }
 
@@ -51,12 +52,17 @@ class TodoListMultipleClass extends React.Component
 	{
 		super(props);
 		this.state = {
+			newTodo: '',
 			todos: getTodos(10),
 		};
 	}
 
 	render()
 	{
+		const state = this.state;
+		const todos = this.state.todos;
+		let inputElement;
+
 		return (
 			<div className="row mt-4">
 				<div className="col-lg-8">
@@ -81,25 +87,46 @@ class TodoListMultipleClass extends React.Component
 					</div>
 					<div className="row">
 						<div className="col-md">
-								<NewTodo onAddNewTodo={(newTodo) => {
-									this.setState({
-										todos: [
-											{
-												text: newTodo,
+							<form
+								className="input-group mb-3 w-75 mx-auto"
+								onSubmit={(ev)=>ev.preventDefault()}
+							>
+								<input
+									className="form-control"
+									ref={(el) => inputElement = el}
+									value={state.newTodo}
+									onInput={(ev) => {
+										this.setState({
+											newTodo: ev.target.value,
+										});
+									}}
+								/>
+								<button
+									className="btn btn-outline-secondary"
+									disabled={state.newTodo.trim() === ''}
+									onClick={()=>{
+										console.log(inputElement)
+										this.setState({
+											newTodo: '',
+											todos: [{
+												text: state.newTodo.trim(),
 												isCompleted: false,
-											},
-											...this.state.todos,
-										],
-									});
-								}}/>
+											}].concat(todos),
+										});
+										inputElement.value = '';
+									}}
+								>
+									Add
+								</button>
+							</form>
 						</div>
 						<div className="col-md-auto">
 							<button
 								className="btn btn-outline-danger float-end"
-								disabled={!this.state.todos.some((todo)=>todo.isCompleted)}
+								disabled={!todos.some((todo)=>todo.isCompleted)}
 								onClick={() => {
 									this.setState({
-										todos: this.state.todos.filter((todo) => !todo.isCompleted)
+										todos: todos.filter((todo) => !todo.isCompleted)
 									})
 								}}
 							>
@@ -107,64 +134,60 @@ class TodoListMultipleClass extends React.Component
 							</button>
 						</div>
 					</div>
-					<div><b>Total: </b>{this.state.todos.length}</div>
-					{(! this.state.todos.length) ? (
+					<div><b>Total: </b>{todos.length}</div>
+					{(! todos.length) ? (
 						<div className="text-secondary text-center">
 							The todo list is empty.
 						</div>
 					) : ''}
 					<div className="list-group mb-5">
 						{
-							this.state.todos.map((todo, index) => (
-								<React.Fragment key={index}>
-									<div className="list-group-item">
-										<input
-											type="checkbox"
-											id={`todo-item-${index}`}
-											className="form-check-input"
-											checked={todo.isCompleted}
-											onChange={(ev)=>{
-												todo.isCompleted = ev.target.checked;
-												this.setState({
-													todos: [...this.state.todos],
-												});
-											}}
-										/>
-										<span> </span>
-										<label
-											className={`form-check-label ${todo.isCompleted ? `text-decoration-line-through` : ''}` }
-											htmlFor={`todo-item-${index}`}
-										>
-											{todo.text}
-										</label>
-										<button
-											className="btn btn-sm btn-outline-danger float-end"
-											onClick={()=>{
-												this.state.todos.splice(index, 1);
-												this.setState({
-													todos: [...this.state.todos],
-												});
-											}}
-										>
-											Remove
-										</button>
-									</div>
-								</React.Fragment>
-							))
+							<TodoList
+								todos={todos}
+								onTodoUpdate={(index, todo) => {
+									todos[index] = todo;
+									this.setState({
+										todos: [...todos],
+									});
+								}}
+								onRemove={(index) => {
+									todos.splice(index, 1);
+									this.setState({
+										todos: [...todos],
+									});
+								}}
+							/>
 						}
 					</div>
 				</div>
 				<div className="col-lg-4">
-					<h5>Data</h5>
-					<pre
-						ref={(el)=>{this.preElement = el}}
-					>
-						<code>
-							{JSON.stringify(this.state, null, 2)}
-						</code>
-					</pre>
+					<DataDisplay
+						data={{...state}}
+					/>
 				</div>
 			</div>
+		);
+	}
+}
+
+class DataDisplay extends React.Component
+{
+	render()
+	{
+		return (
+			<>
+				<h5>Data</h5>
+				<pre
+					ref={(el)=>{this.preElement = el}}
+				>
+					<code>
+						{JSON.stringify({
+							...this.props.data,
+							...{ todos: truncateTodos(this.props.data.todos, 20) }
+						} , null, 2)}
+					</code>
+				</pre>
+			</>
 		);
 	}
 
