@@ -20,7 +20,7 @@ function Todo({ todo, index, onTodoUpdate, onTodoRemove})
 				setIsCompleted(todo.isCompleted);
 			}
 		}
-	});
+	}, [ initialTodo, todo ]);
 
 	return (
 		<div className="list-group-item">
@@ -83,7 +83,7 @@ function TodoListMultipleFunction()
 
 	useEffect(() => {
 		preElement.setAttribute('style', "border: 1px solid #ccc; padding: 20px");
-	}, []);
+	});
 
 	const [, setFakeState] = useState({});
 	const forceUpdate = useCallback(() => setFakeState({}), []);

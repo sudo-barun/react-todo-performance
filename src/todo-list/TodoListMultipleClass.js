@@ -76,20 +76,18 @@ class TodoList extends React.Component
 
 	render()
 	{
-		return this.props.todos.map((todo, index) => {
-			return (
-				<Todo key={index}
-					todo={todo}
-					index={index}
-					onTodoUpdate={(todo) => {
-						this.props.onTodoUpdate(index, todo);
-					}}
-					onTodoRemove={() => {
-						this.props.onTodoRemove(index);
-					}}
-				/>
-			);
-		});
+		return this.props.todos.map((todo, index) => (
+			<Todo key={index}
+				todo={todo}
+				index={index}
+				onTodoUpdate={(todo) => {
+					this.props.onTodoUpdate(index, todo);
+				}}
+				onTodoRemove={() => {
+					this.props.onTodoRemove(index);
+				}}
+			/>
+		));
 	}
 }
 
