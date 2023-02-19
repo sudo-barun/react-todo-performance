@@ -1,6 +1,72 @@
 import React from "react";
 import { getTodos, truncateTodos } from "./common.js";
 
+class Todo extends React.Component
+{
+	constructor(props)
+	{
+		super(props);
+		this.initialTodo = props.todo;
+		this.state = {
+			...props.todo,
+		};
+	}
+
+	componentDidUpdate()
+	{
+		if (this.initialTodo !== this.props.todo) {
+			this.initialTodo = this.props.todo;
+			this.setState(this.state);
+		}
+	}
+
+	render()
+	{
+		if (this.initialTodo !== this.props.todo) {
+			this.state = {
+				...this.props.todo,
+			};
+		}
+
+		const { text, isCompleted } = this.state;
+		const index = this.props.index;
+
+		return (
+			<div className="list-group-item">
+				<input
+					type="checkbox"
+					id={`todo-item-${index}`}
+					className="form-check-input"
+					checked={isCompleted}
+					onChange={(ev) => {
+						const isCompleted = ev.target.checked;
+						this.setState({
+							isCompleted: isCompleted,
+						});
+						this.props.onTodoUpdate({
+							...this.state,
+							isCompleted: isCompleted,
+						});
+					}}
+				/>
+				<span> </span>
+				<label
+					className={`form-check-label ${isCompleted ? `text-decoration-line-through` : ''}` }
+					htmlFor={`todo-item-${index}`}
+				>
+					{text}
+				</label>
+				<button
+					className="btn btn-sm btn-outline-danger float-end"
+					onClick={() => this.props.onTodoRemove()}
+				>
+					Remove
+				</button>
+			</div>
+		);
+	}
+}
+
 class TodoList extends React.Component
 {
 	shouldComponentUpdate(nextProps)
@@ -11,35 +77,17 @@ class TodoList extends React.Component
 	render()
 	{
 		return this.props.todos.map((todo, index) => {
-			const { text, isCompleted } = todo;
 			return (
-				<div key={index} className="list-group-item">
-					<input
-						type="checkbox"
-						id={`todo-item-${index}`}
-						className="form-check-input"
-						checked={isCompleted}
-						onChange={(ev) => {
-							this.props.onTodoUpdate(index, {
-								...todo,
-								isCompleted: ev.target.checked,
-							});
-						}}
-					/>
-					<span> </span>
-					<label
-						className={`form-check-label ${isCompleted ? `text-decoration-line-through` : ''}` }
-						htmlFor={`todo-item-${index}`}
-					>
-						{text}
-					</label>
-					<button
-						className="btn btn-sm btn-outline-danger float-end"
-						onClick={() => this.props.onRemove(index)}
-					>
-						Remove
-					</button>
-				</div>
+				<Todo key={index}
+					todo={todo}
+					index={index}
+					onTodoUpdate={(todo) => {
+						this.props.onTodoUpdate(index, todo);
+					}}
+					onTodoRemove={() => {
+						this.props.onTodoRemove(index);
+					}}
+				/>
 			);
 		});
 	}
@@ -143,10 +191,10 @@ class TodoListMultipleClass extends React.Component
 								onTodoUpdate={(index, todo) => {
 									todos[index] = todo;
 									this.setState({
-										todos: [...todos],
+										todos,
 									});
 								}}
-								onRemove={(index) => {
+								onTodoRemove={(index) => {
 									todos.splice(index, 1);
 									this.setState({
 										todos: [...todos],
