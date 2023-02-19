@@ -1,41 +1,74 @@
-import React, { memo, useEffect } from "react";
+import React, { memo, useCallback, useEffect, useRef } from "react";
 import { useState } from 'react';
 import { getTodos, truncateTodos } from "./common";
 
-const TodoList = memo(function ({ todos, onTodoUpdate, onRemove })
+function Todo({ todo, index, onTodoUpdate, onTodoRemove})
 {
-	return todos.map((todo, index) => {
-		const { text, isCompleted } = todo;
-		return (
-			<div key={index} className="list-group-item">
-				<input
-					type="checkbox"
-					id={`todo-item-${index}`}
-					className="form-check-input"
-					checked={isCompleted}
-					onChange={(ev) => {
-						onTodoUpdate(index, {
-							...todo,
-							isCompleted: ev.target.checked,
-						});
-					}}
-				/>
-				<span> </span>
-				<label
-					className={`form-check-label ${isCompleted ? `text-decoration-line-through` : ''}` }
-					htmlFor={`todo-item-${index}`}
-				>
-					{text}
-				</label>
-				<button
-					className="btn btn-sm btn-outline-danger float-end"
-					onClick={() => onRemove(index)}
-				>
-					Remove
-				</button>
-			</div>
-		);
+	const [initialTodo, setInitialTodo ] = useState(todo);
+	const { text } = todo;
+	const [ isCompleted, setIsCompleted ] = useState(todo.isCompleted);
+	const mounted = useRef();
+
+	useEffect(() => {
+		if (! mounted.current) {
+			// do componentDidMount logic
+			mounted.current = true;
+		} else {
+			// do componentDidUpdate logic
+			if (initialTodo !== todo) {
+				setInitialTodo(todo);
+				setIsCompleted(todo.isCompleted);
+			}
+		}
 	});
+
+	return (
+		<div className="list-group-item">
+			<input
+				type="checkbox"
+				id={`todo-item-${index}`}
+				className="form-check-input"
+				checked={isCompleted}
+				onChange={(ev) => {
+					const isCompleted = ev.target.checked;
+					setIsCompleted(isCompleted);
+					onTodoUpdate({
+						...todo,
+						isCompleted: isCompleted,
+					});
+				}}
+			/>
+			<span> </span>
+			<label
+				className={`form-check-label ${isCompleted ? `text-decoration-line-through` : ''}` }
+				htmlFor={`todo-item-${index}`}
+			>
+				{text}
+			</label>
+			<button
+				className="btn btn-sm btn-outline-danger float-end"
+				onClick={() => onTodoRemove()}
+			>
+				Remove
+			</button>
+		</div>
+	);
+}
+
+const TodoList = memo(function ({ todos, onTodoUpdate, onTodoRemove })
+{
+	return todos.map((todo, index) => (
+		<Todo key={index}
+			index={index}
+			todo={todo}
+			onTodoUpdate={(todo) => {
+				onTodoUpdate(index, todo);
+			}}
+			onTodoRemove={() => {
+				onTodoRemove(index);
+			}}
+		/>
+	));
 }, (oldProps, newProps)=> {
 	return newProps.todos === oldProps.todos;
 });
@@ -51,6 +84,9 @@ function TodoListMultipleFunction()
 	useEffect(() => {
 		preElement.setAttribute('style', "border: 1px solid #ccc; padding: 20px");
 	}, []);
+
+	const [, setFakeState] = useState({});
+	const forceUpdate = useCallback(() => setFakeState({}), []);
 
 	return (
 		<div className="row mt-4">
@@ -124,9 +160,9 @@ function TodoListMultipleFunction()
 						todos={todos}
 						onTodoUpdate={(index, todo) => {
 							todos[index] = todo;
-							setTodos([...todos]);
+							forceUpdate();
 						}}
-						onRemove={(index) => {
+						onTodoRemove={(index) => {
 							todos.splice(index, 1);
 							setTodos([...todos]);
 						}}
